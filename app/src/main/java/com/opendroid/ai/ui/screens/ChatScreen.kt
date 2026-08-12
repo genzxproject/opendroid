@@ -24,7 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Copy
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Forum
@@ -757,11 +757,11 @@ fun ChatBubble(
     }
 
     Box(
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = alignment
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
+                .align(alignment)
                 .widthIn(max = 320.dp)
                 .clip(
                     RoundedCornerShape(
@@ -832,7 +832,7 @@ fun ChatBubble(
                 // Copy any message (tap the copy icon)
                 val clipContext = context ?: LocalContext.current
                 Icon(
-                    imageVector = Icons.Default.Copy,
+                    imageVector = Icons.Default.ContentCopy,
                     contentDescription = "Copy message",
                     tint = TextSecondary,
                     modifier = Modifier
