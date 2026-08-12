@@ -1,6 +1,7 @@
 package com.opendroid.ai.core.widget
 
 import android.app.PendingIntent
+import android.annotation.SuppressLint
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -33,7 +34,7 @@ class OpenDroidTileService : TileService() {
             )
             startActivityAndCollapse(pi)
         } else {
-            @Suppress("DEPRECATION")
+            @SuppressLint("StartActivityAndCollapseDeprecated")
             startActivityAndCollapse(intent)
         }
     }
