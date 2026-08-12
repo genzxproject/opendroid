@@ -722,7 +722,7 @@ fun ChatBubble(
     onEditRequested: ((ChatMessage) -> Unit)? = null
 ) {
     val isAgent = message.sender == ChatMessage.Sender.AGENT
-    val alignment = if (isAgent) Alignment.Start else Alignment.End
+    val alignment: Alignment = if (isAgent) Alignment.Start else Alignment.End
     // Claymorphism: agent = soft raised surface, user = accent-tinted clay
     val bubbleColor = if (isAgent) CardBackground else AccentGreenButton.copy(alpha = 0.18f)
     val borderColor = if (isAgent) BorderColor else AccentGreenButton.copy(alpha = 0.35f)
