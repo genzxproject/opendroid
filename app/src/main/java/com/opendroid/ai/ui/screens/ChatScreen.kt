@@ -366,7 +366,7 @@ fun ChatScreen(
                         .weight(1f)
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                     contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
                 ) {
                     items(history) { msg ->
@@ -721,7 +721,9 @@ fun ChatBubble(
 ) {
     val isAgent = message.sender == ChatMessage.Sender.AGENT
     val alignment = if (isAgent) Alignment.Start else Alignment.End
-    val bubbleColor = if (isAgent) CardBackground else AccentPurple.copy(alpha = 0.25f)
+    // Claymorphism: agent = soft raised surface, user = accent-tinted clay
+    val bubbleColor = if (isAgent) CardBackground else AccentGreenButton.copy(alpha = 0.18f)
+    val borderColor = if (isAgent) BorderColor else AccentGreenButton.copy(alpha = 0.35f)
     val textColor = TextPrimary
     val timeFormat = remember { SimpleDateFormat("h:mm a", Locale.getDefault()) }
 
@@ -752,88 +754,83 @@ fun ChatBubble(
         }
     }
 
-    Column(
+    Box(
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = alignment
+        contentAlignment = alignment
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = if (isAgent) Arrangement.Start else Arrangement.End
-        ) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = 290.dp)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = if (isAgent) 4.dp else 16.dp,
-                            bottomEnd = if (isAgent) 16.dp else 4.dp
-                        )
+        Column(
+            modifier = Modifier
+                .widthIn(max = 320.dp)
+                .clip(
+                    RoundedCornerShape(
+                        topStart = 20.dp,
+                        topEnd = 20.dp,
+                        bottomStart = if (isAgent) 4.dp else 20.dp,
+                        bottomEnd = if (isAgent) 20.dp else 4.dp
                     )
-                    .background(bubbleColor)
-                    .border(
-                        1.dp,
-                        if (isAgent) BorderColor else AccentPurple.copy(alpha = 0.5f),
-                        RoundedCornerShape(
-                            topStart = 16.dp,
-                            topEnd = 16.dp,
-                            bottomStart = if (isAgent) 4.dp else 16.dp,
-                            bottomEnd = if (isAgent) 16.dp else 4.dp
-                        )
-                    )
-                    .padding(14.dp)
-            ) {
-                if (isAgent && message.modelBadge != null) {
-                    val displayName = when (message.modelBadge) {
-                        "Gemma 4 (On-device)" -> "ON-DEVICE (AI CORE)"
-                        "On-Device AI" -> "ON-DEVICE AI"
-                        "LiteRT-LM (On-device)" -> "ON-DEVICE (LITERT)"
-                        else -> message.modelBadge.uppercase(Locale.getDefault())
-                    }
-                    Text(
-                        text = displayName,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AccentCyan,
-                        fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-
-                Text(
-                    text = message.text,
-                    fontSize = 14.sp,
-                    color = textColor,
-                    lineHeight = 20.sp
                 )
-                
-                Spacer(modifier = Modifier.height(4.dp))
+                .background(bubbleColor)
+                .border(
+                    1.dp,
+                    borderColor,
+                    RoundedCornerShape(
+                        topStart = 20.dp,
+                        topEnd = 20.dp,
+                        bottomStart = if (isAgent) 4.dp else 20.dp,
+                        bottomEnd = if (isAgent) 20.dp else 4.dp
+                    )
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            if (isAgent && message.modelBadge != null) {
+                val displayName = when (message.modelBadge) {
+                    "Gemma 4 (On-device)" -> "ON-DEVICE (AI CORE)"
+                    "On-Device AI" -> "ON-DEVICE AI"
+                    "LiteRT-LM (On-device)" -> "ON-DEVICE (LITERT)"
+                    else -> message.modelBadge.uppercase(Locale.getDefault())
+                }
+                Text(
+                    text = displayName,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AccentCyan,
+                    fontFamily = FontFamily.Monospace,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
 
-                Row(
-                    modifier = Modifier.align(Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    // Edit affordance: user messages only, never on agent replies or the
-                    // contact-picker card (which is always an agent message, so it's
-                    // already excluded by the isAgent check above never reaching here).
-                    if (!isAgent && onEditRequested != null) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit message",
-                            tint = TextSecondary,
-                            modifier = Modifier
-                                .size(13.dp)
-                                .clickable { onEditRequested(message) }
-                        )
-                    }
-                    Text(
-                        text = timeFormat.format(Date(message.timestamp)),
-                        fontSize = 9.sp,
-                        color = TextSecondary
+            Text(
+                text = message.text,
+                fontSize = 14.sp,
+                color = textColor,
+                lineHeight = 21.sp
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier.align(Alignment.End),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Edit affordance: user messages only, never on agent replies or the
+                // contact-picker card (which is always an agent message, so it's
+                // already excluded by the isAgent check above never reaching here).
+                if (!isAgent && onEditRequested != null) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit message",
+                        tint = TextSecondary,
+                        modifier = Modifier
+                            .size(14.dp)
+                            .clickable { onEditRequested(message) }
                     )
                 }
+                Text(
+                    text = timeFormat.format(Date(message.timestamp)),
+                    fontSize = 10.sp,
+                    color = TextSecondary
+                )
             }
         }
     }
