@@ -3,4 +3,7 @@
     <string name="app_name">OpenDroid</string>
     <string name="accessibility_service_desc">Provides autonomous UI interaction, screen reading, and navigation assistance for OpenDroid Agent control.</string>
     <string name="widget_description">OpenDroid quick status: agent mode and version. Tap to open the app.</string>
+    <string name="widget_title">🤖 OpenDroid</string>
+    <string name="widget_mode_prefix">Mode: %1$s</string>
+    <string name="widget_version">v1.1.0</string>
 </resources>
