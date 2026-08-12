@@ -1,5 +1,6 @@
 package com.opendroid.ai.core.widget
 
+import android.app.PendingIntent
 import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
@@ -25,7 +26,11 @@ class OpenDroidTileService : TileService() {
     override fun onClick() {
         // Launch the main app on tap
         val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return
-        startActivityAndCollapse(intent)
+        val pi = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        startActivityAndCollapse(pi)
     }
 
     private fun updateTile() {
