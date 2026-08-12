@@ -1,5 +1,6 @@
 package com.opendroid.ai.core.widget
 
+import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import com.opendroid.ai.BuildConfig
@@ -32,7 +33,9 @@ class OpenDroidTileService : TileService() {
         val mode = WidgetStateStore.getMode(this)
         tile.state = Tile.STATE_ACTIVE
         tile.label = "OpenDroid · $mode"
-        tile.subtitle = "v${BuildConfig.VERSION_NAME}"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            tile.subtitle = "v${BuildConfig.VERSION_NAME}"
+        }
         tile.icon = androidx.core.graphics.drawable.IconCompat.createWithResource(this, R.drawable.ic_launcher_monochrome)
             .toIcon(this)
         tile.updateTile()
