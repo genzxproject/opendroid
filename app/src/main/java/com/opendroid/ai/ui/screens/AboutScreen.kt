@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -157,11 +158,12 @@ fun AboutScreen(
                         // Self-update check
                         var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
                         val context = LocalContext.current
-                        when (updateState) {
+                        val scope = rememberCoroutineScope()
+                        when (val state = updateState) {
                             UpdateState.Idle -> Button(
                                 onClick = {
                                     updateState = UpdateState.Checking
-                                    androidx.compose.runtime.rememberCoroutineScope().launch {
+                                    scope.launch {
                                         val info = Updater.checkForUpdate(BuildConfig.VERSION_NAME)
                                         updateState = if (info.hasUpdate) {
                                             UpdateState.Available(info)
@@ -187,7 +189,7 @@ fun AboutScreen(
                             )
 
                             is UpdateState.Available -> {
-                                val info = updateState.info
+                                val info = state.info
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
                                         "Update tersedia: v${info.latestVersion}",
@@ -214,7 +216,7 @@ fun AboutScreen(
                                         Button(
                                             onClick = {
                                                 downloading = true
-                                                androidx.compose.runtime.rememberCoroutineScope().launch {
+                                                scope.launch {
                                                     if (!Updater.canRequestInstall(context)) {
                                                         downloading = false
                                                         Updater.openInstallSettings(context)

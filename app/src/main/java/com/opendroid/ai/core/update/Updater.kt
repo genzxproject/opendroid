@@ -40,13 +40,15 @@ object Updater {
             val tag = json.optString("tag_name", "").removePrefix("v")
             var apkUrl = ""
             var sha = ""
-            val assets = json.optJSONArray("assets") ?: JSONObject.NULL
-            for (i in 0 until (assets as? org.json.JSONArray)?.length() ?: 0) {
-                val a = assets.getJSONObject(i)
-                if (a.optString("name").endsWith(".apk")) {
-                    apkUrl = a.optString("browser_download_url")
-                    sha = a.optJSONObject("digest")?.optString("sha256", "") ?: ""
-                    break
+            val assets = json.optJSONArray("assets")
+            if (assets != null) {
+                for (i in 0 until assets.length()) {
+                    val a = assets.getJSONObject(i)
+                    if (a.optString("name").endsWith(".apk")) {
+                        apkUrl = a.optString("browser_download_url")
+                        sha = a.optJSONObject("digest")?.optString("sha256", "") ?: ""
+                        break
+                    }
                 }
             }
             UpdateInfo(

@@ -249,12 +249,12 @@ fun SettingsScreen(
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             val context = LocalContext.current
+                            val backupScope = rememberCoroutineScope()
                             val exportLauncher = rememberLauncherForActivityResult(
                                 ActivityResultContracts.CreateDocument("application/json")
                             ) { uri ->
                                 if (uri != null) {
-                                    val scope = rememberCoroutineScope()
-                                    scope.launch {
+                                    backupScope.launch {
                                         val json = viewModel.exportConfig()
                                         if (json != null) {
                                             context.contentResolver.openOutputStream(uri)?.use {
@@ -268,8 +268,7 @@ fun SettingsScreen(
                                 ActivityResultContracts.OpenDocument()
                             ) { uri ->
                                 if (uri != null) {
-                                    val scope = rememberCoroutineScope()
-                                    scope.launch {
+                                    backupScope.launch {
                                         val json = context.contentResolver.openInputStream(uri)
                                             ?.bufferedReader()?.readText()
                                         if (json != null && viewModel.importConfig(json)) {
