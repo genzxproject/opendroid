@@ -8,8 +8,8 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 
 /**
- * OpenDroid color palette — resolved via CompositionLocal so all screens
- * automatically adapt to the active theme (light / dark).
+ * OpenDroid color palette — Claymorphism "soft surface" theme.
+ * Soft clay tones: warm cream backgrounds, muted clay accents, soft shadows.
  */
 data class OpenDroidColors(
     val background: Color,
@@ -27,35 +27,35 @@ data class OpenDroidColors(
     val isDark: Boolean
 )
 
-// ── Dark palette (the existing one) ─────────────────────────
+// ── Dark palette — soft clay (warm dark) ────────────────────
 val DarkPalette = OpenDroidColors(
-    background = Color(0xFF080C10),
-    surface = Color(0xFF0D1117),
-    cardBackground = Color(0xFF161B22),
-    borderColor = Color(0xFF30363D),
-    textPrimary = Color(0xFFF0F6FC),
-    textSecondary = Color(0xFF8B949E),
-    accentNeonGreen = Color(0xFF00FF88),
-    accentGreenButton = Color(0xFF00C46A),
-    accentPurple = Color(0xFF8A2BE2),
-    accentCyan = Color(0xFF00F0FF),
-    accentRed = Color(0xFFFF3B30),
+    background = Color(0xFF1C1917),      // warm near-black
+    surface = Color(0xFF1C1917),          // seamless with bg (clay: surface == bg)
+    cardBackground = Color(0xFF262320),   // raised soft surface
+    borderColor = Color(0xFF3D3833),      // soft warm border
+    textPrimary = Color(0xFFEDE7E0),
+    textSecondary = Color(0xFFA8A29E),
+    accentNeonGreen = Color(0xFFA3B18A),  // muted sage
+    accentGreenButton = Color(0xFF7D8F69),
+    accentPurple = Color(0xFF9C8ABF),     // soft lavender
+    accentCyan = Color(0xFF7FB5B5),       // dusty teal
+    accentRed = Color(0xFFE07A5F),        // terracotta
     isDark = true
 )
 
-// ── Light palette ───────────────────────────────────────────
+// ── Light palette — soft clay (warm cream) ──────────────────
 val LightPalette = OpenDroidColors(
-    background = Color(0xFFF6F8FA),
-    surface = Color(0xFFFFFFFF),
-    cardBackground = Color(0xFFFFFFFF),
-    borderColor = Color(0xFFD0D7DE),
-    textPrimary = Color(0xFF1F2328),
-    textSecondary = Color(0xFF656D76),
-    accentNeonGreen = Color(0xFF1A7F37),
-    accentGreenButton = Color(0xFF1A7F37),
-    accentPurple = Color(0xFF8250DF),
-    accentCyan = Color(0xFF0969DA),
-    accentRed = Color(0xFFCF222E),
+    background = Color(0xFFF2EDE7),       // warm cream
+    surface = Color(0xFFF2EDE7),          // seamless
+    cardBackground = Color(0xFFF9F6F2),   // soft raised
+    borderColor = Color(0xFFE4DDD4),
+    textPrimary = Color(0xFF3B3530),
+    textSecondary = Color(0xFF8A837C),
+    accentNeonGreen = Color(0xFF7D8F69),  // sage
+    accentGreenButton = Color(0xFF6B7D58),
+    accentPurple = Color(0xFF8B7FA8),
+    accentCyan = Color(0xFF5F8F8F),
+    accentRed = Color(0xFFC96F4A),        // terracotta
     isDark = false
 )
 
@@ -70,12 +70,6 @@ object AppTheme {
 }
 
 // ── Legacy top-level aliases ────────────────────────────────
-// These keep every existing screen compiling without changes.
-// They delegate to the composition-local palette at read-time.
-
-// NOTE: These are static vals used outside @Composable scope.
-// For full dynamic theming in screens that read these outside Compose,
-// they keep the dark defaults. Inside @Composable, use AppTheme.colors.*
 val DarkBackground = DarkPalette.background
 val DarkSurface = DarkPalette.surface
 val CardBackground = DarkPalette.cardBackground

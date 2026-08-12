@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 initial = com.opendroid.ai.data.models.LLMConfig()
             )
 
-            OpenDroidTheme(isDarkTheme = config.isDarkMode) {
+            OpenDroidTheme(isDarkTheme = config.isDarkMode, useDynamicColor = config.useDynamicColor) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = AppTheme.colors.background

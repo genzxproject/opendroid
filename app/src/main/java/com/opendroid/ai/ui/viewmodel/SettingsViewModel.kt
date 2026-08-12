@@ -23,9 +23,11 @@ import com.opendroid.ai.core.llm.ClaudeModelCatalog
 import com.opendroid.ai.core.llm.ConnectionTestPlanner
 import com.opendroid.ai.core.llm.ConnectionTestState
 import com.opendroid.ai.core.llm.ImportLocalModelResult
+import com.opendroid.ai.core.widget.WidgetStateStore
 import com.opendroid.ai.core.llm.LLMRequest
 import com.opendroid.ai.core.llm.ModelFetchOutcome
 import com.opendroid.ai.core.llm.ProviderCatalog
+import kotlinx.serialization.json.Json
 import com.opendroid.ai.core.llm.ResponseFormat
 import com.opendroid.ai.core.llm.RetryPolicy
 import com.opendroid.ai.core.llm.error.SecretRegistry
@@ -63,6 +65,8 @@ class SettingsViewModel @Inject constructor(
     // so it lives with ordinary settings rather than in encrypted storage.
     private val appSettingsStore: AppSettingsStore
 ) : ViewModel() {
+
+    private val settingsJson = Json { ignoreUnknownKeys = true }
 
     private val _huggingFaceToken = MutableStateFlow("")
     val huggingFaceToken: StateFlow<String> = _huggingFaceToken
@@ -672,6 +676,10 @@ class SettingsViewModel @Inject constructor(
                 current.copy(autoMode = mode, autoConfirmPlans = mode == AutoMode.YOLO)
             }
         }
+        // Keep the home-screen widget in sync with the approval mode
+        viewModelScope.launch {
+            WidgetStateStore.setMode(context, mode.name)
+        }
     }
 
     /** Removes one grant. Writes the RESOLVED map minus the action, so the
@@ -712,6 +720,39 @@ class SettingsViewModel @Inject constructor(
                 current.copy(isDarkMode = enabled)
             }
         }
+    }
+
+    fun updateDynamicColor(enabled: Boolean) {
+        _llmConfig.value = _llmConfig.value.copy(useDynamicColor = enabled)
+        viewModelScope.launch {
+            settingsRepository.updateConfig { current ->
+                current.copy(useDynamicColor = enabled)
+            }
+        }
+    }
+
+    // ── Settings export/import (no API keys — they stay in the Keystore) ──
+
+    /** Serialize the current config (credentials already stripped at rest). */
+    suspend fun exportConfig(): String? = withContext(Dispatchers.IO) {
+        try {
+            val config = settingsRepository.llmConfig.first()
+            val stripped = config.copy(
+                apiKeys = emptyMap(),
+                elevenLabsApiKey = ""
+            )
+            settingsJson.encodeToString(stripped)
+        } catch (e: Exception) { null }
+    }
+
+    /** Replace current config from an exported file. Secrets are not included. */
+    suspend fun importConfig(json: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val imported = settingsJson.decodeFromString<LLMConfig>(json)
+            settingsRepository.updateConfig { imported }
+            _llmConfig.value = imported
+            true
+        } catch (e: Exception) { false }
     }
 
     // ── On-Device Model Lifecycle Management ──

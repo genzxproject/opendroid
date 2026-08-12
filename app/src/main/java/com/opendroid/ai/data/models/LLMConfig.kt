@@ -51,6 +51,8 @@ data class LLMConfig(
     val multiAgentModeEnabled: Boolean = false,
     val showFloatingButton: Boolean = true,
     val isDarkMode: Boolean = true,
+    /** Material You dynamic color (Android 12+); falls back to clay palette below. */
+    val useDynamicColor: Boolean = false,
     val lastModelFetch: Map<String, Long> = emptyMap(), // Provider -> last fetch timestamp
     val modelCache: Map<String, List<AIModel>> = emptyMap() // Provider -> cached AIModels list
 )

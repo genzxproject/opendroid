@@ -11,11 +11,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -24,7 +30,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.opendroid.ai.BuildConfig
 import com.opendroid.ai.R
+import com.opendroid.ai.core.update.Updater
 import com.opendroid.ai.ui.theme.*
+import kotlinx.coroutines.launch
+
+sealed interface UpdateState {
+    data object Idle : UpdateState
+    data object Checking : UpdateState
+    data object UpToDate : UpdateState
+    data class Available(val info: Updater.UpdateInfo) : UpdateState
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,6 +151,91 @@ fun AboutScreen(
                             color = TextSecondary,
                             fontFamily = FontFamily.Monospace
                         )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Self-update check
+                        var updateState by remember { mutableStateOf<UpdateState>(UpdateState.Idle) }
+                        val context = LocalContext.current
+                        when (updateState) {
+                            UpdateState.Idle -> Button(
+                                onClick = {
+                                    updateState = UpdateState.Checking
+                                    androidx.compose.runtime.rememberCoroutineScope().launch {
+                                        val info = Updater.checkForUpdate(BuildConfig.VERSION_NAME)
+                                        updateState = if (info.hasUpdate) {
+                                            UpdateState.Available(info)
+                                        } else {
+                                            UpdateState.UpToDate
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = AccentNeonGreen),
+                                shape = RoundedCornerShape(16.dp)
+                            ) { Text("Cek Update", color = DarkBackground, fontWeight = FontWeight.Bold) }
+
+                            UpdateState.Checking -> Text(
+                                "Memeriksa update…",
+                                color = TextSecondary,
+                                fontSize = 12.sp
+                            )
+
+                            UpdateState.UpToDate -> Text(
+                                "Sudah versi terbaru ✓",
+                                color = AccentNeonGreen,
+                                fontSize = 12.sp
+                            )
+
+                            is UpdateState.Available -> {
+                                val info = updateState.info
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        "Update tersedia: v${info.latestVersion}",
+                                        color = AccentNeonGreen,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    var downloading by remember { mutableStateOf(false) }
+                                    var progress by remember { mutableFloatStateOf(0f) }
+                                    if (downloading) {
+                                        LinearProgressIndicator(
+                                            progress = { progress },
+                                            modifier = Modifier.fillMaxWidth().height(8.dp),
+                                            color = AccentNeonGreen,
+                                            trackColor = BorderColor
+                                        )
+                                        Text(
+                                            "Mengunduh… ${(progress * 100).toInt()}%",
+                                            color = TextSecondary,
+                                            fontSize = 11.sp
+                                        )
+                                    } else {
+                                        Button(
+                                            onClick = {
+                                                downloading = true
+                                                androidx.compose.runtime.rememberCoroutineScope().launch {
+                                                    if (!Updater.canRequestInstall(context)) {
+                                                        downloading = false
+                                                        Updater.openInstallSettings(context)
+                                                        return@launch
+                                                    }
+                                                    val apk = Updater.downloadApk(
+                                                        info.apkUrl, context, info.sha256
+                                                    ) { p -> progress = p }
+                                                    downloading = false
+                                                    if (apk != null) {
+                                                        Updater.installApk(context, apk)
+                                                    }
+                                                }
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = AccentGreenButton),
+                                            shape = RoundedCornerShape(16.dp)
+                                        ) { Text("Download & Install", color = DarkBackground, fontWeight = FontWeight.Bold) }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

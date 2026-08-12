@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">OpenDroid</string>
     <string name="accessibility_service_desc">Provides autonomous UI interaction, screen reading, and navigation assistance for OpenDroid Agent control.</string>
+    <string name="widget_description">OpenDroid quick status: agent mode and version. Tap to open the app.</string>
 </resources>

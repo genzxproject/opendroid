@@ -19,6 +19,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -114,8 +116,8 @@ fun SettingsScreen(
     var importAsCustomModel by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    val importLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        contract = androidx.activity.result.contract.ActivityResultContracts.GetContent()
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         if (uri != null) {
             when {
@@ -216,6 +218,74 @@ fun SettingsScreen(
                                 fontSize = 12.sp,
                                 color = TextSecondary
                             )
+                        }
+                    }
+                }
+            }
+
+            // Settings Export / Import (no API keys — they stay in the Keystore)
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, BorderColor, RoundedCornerShape(12.dp)),
+                    colors = CardDefaults.cardColors(containerColor = CardBackground)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "SETTINGS BACKUP",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily.Monospace,
+                            color = AccentCyan
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Export configuration (providers, models, auto-mode, macros). " +
+                                "API keys are NOT included — re-enter them after import.",
+                            fontSize = 12.sp,
+                            color = TextSecondary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            val context = LocalContext.current
+                            val exportLauncher = rememberLauncherForActivityResult(
+                                ActivityResultContracts.CreateDocument("application/json")
+                            ) { uri ->
+                                if (uri != null) {
+                                    val scope = rememberCoroutineScope()
+                                    scope.launch {
+                                        val json = viewModel.exportConfig()
+                                        if (json != null) {
+                                            context.contentResolver.openOutputStream(uri)?.use {
+                                                it.write(json.toByteArray())
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            val importLauncher = rememberLauncherForActivityResult(
+                                ActivityResultContracts.OpenDocument()
+                            ) { uri ->
+                                if (uri != null) {
+                                    val scope = rememberCoroutineScope()
+                                    scope.launch {
+                                        val json = context.contentResolver.openInputStream(uri)
+                                            ?.bufferedReader()?.readText()
+                                        if (json != null && viewModel.importConfig(json)) {
+                                            // refresh UI state after import
+                                        }
+                                    }
+                                }
+                            }
+                            Button(
+                                onClick = { exportLauncher.launch("opendroid-settings.json") },
+                                colors = ButtonDefaults.buttonColors(containerColor = AccentGreenButton)
+                            ) { Text("Export", color = DarkBackground) }
+                            Button(
+                                onClick = { importLauncher.launch(arrayOf("application/json")) },
+                                colors = ButtonDefaults.buttonColors(containerColor = AccentPurple)
+                            ) { Text("Import", color = DarkBackground) }
                         }
                     }
                 }
@@ -1931,6 +2001,37 @@ fun SettingsScreen(
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = AccentNeonGreen,
                                     checkedTrackColor = AccentNeonGreen.copy(alpha = 0.5f)
+                                )
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Material You dynamic color (Android 12+)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Dynamic Color (Material You)",
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = TextPrimary
+                                )
+                                Text(
+                                    text = "Use wallpaper colors on Android 12+.",
+                                    fontSize = 12.sp,
+                                    color = TextSecondary
+                                )
+                            }
+                            Switch(
+                                checked = config.useDynamicColor,
+                                onCheckedChange = { viewModel.updateDynamicColor(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = AccentPurple,
+                                    checkedTrackColor = AccentPurple.copy(alpha = 0.5f)
                                 )
                             )
                         }

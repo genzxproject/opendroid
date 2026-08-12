@@ -7,6 +7,8 @@ import com.opendroid.ai.core.crash.DeviceMetadata
 import com.opendroid.ai.core.crash.OpenDroidCrashHandler
 import com.opendroid.ai.core.memory.MemoryManager
 import com.opendroid.ai.core.security.LegacyPreferenceMigration
+import com.opendroid.ai.core.widget.WidgetStateStore
+import com.opendroid.ai.BuildConfig
 import com.opendroid.ai.data.crash.CrashLogRepository
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -31,6 +33,11 @@ class OpenDroidApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Seed the home-screen widget with the current version on every start
+        appScope.launch {
+            WidgetStateStore.setVersion(this@OpenDroidApp, BuildConfig.VERSION_NAME)
+        }
 
         // Installed first so that a crash in any later startup step is captured.
         installCrashHandler()

@@ -1,17 +1,24 @@
 package com.opendroid.ai.ui.theme
 
 import android.graphics.Color
+import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 
 /**
@@ -42,10 +49,12 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = DarkPalette.accentCyan,
     background = DarkPalette.background,
     surface = DarkPalette.surface,
+    surfaceVariant = DarkPalette.cardBackground,
     onPrimary = DarkPalette.background,
     onSecondary = DarkPalette.textPrimary,
     onBackground = DarkPalette.textPrimary,
     onSurface = DarkPalette.textPrimary,
+    onSurfaceVariant = DarkPalette.textSecondary,
     error = DarkPalette.accentRed
 )
 
@@ -55,20 +64,37 @@ private val LightColorScheme = lightColorScheme(
     tertiary = LightPalette.accentCyan,
     background = LightPalette.background,
     surface = LightPalette.surface,
+    surfaceVariant = LightPalette.cardBackground,
     onPrimary = LightPalette.surface,
     onSecondary = LightPalette.textPrimary,
     onBackground = LightPalette.textPrimary,
     onSurface = LightPalette.textPrimary,
+    onSurfaceVariant = LightPalette.textSecondary,
     error = LightPalette.accentRed
+)
+
+// Claymorphism: large soft radii everywhere — buttons, cards, inputs
+val ClayShapes = Shapes(
+    extraSmall = RoundedCornerShape(12.dp),
+    small = RoundedCornerShape(16.dp),
+    medium = RoundedCornerShape(24.dp),
+    large = RoundedCornerShape(28.dp),
+    extraLarge = RoundedCornerShape(32.dp)
 )
 
 @Composable
 fun OpenDroidTheme(
     isDarkTheme: Boolean = true,
+    useDynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val palette = if (isDarkTheme) DarkPalette else LightPalette
-    val colorScheme = if (isDarkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = when {
+        useDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+            if (isDarkTheme) dynamicDarkColorScheme(LocalContext.current) else dynamicLightColorScheme(LocalContext.current)
+        isDarkTheme -> DarkColorScheme
+        else -> LightColorScheme
+    }
 
     val view = LocalView.current
     val activity = view.context as? ComponentActivity
@@ -87,6 +113,7 @@ fun OpenDroidTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
+            shapes = ClayShapes,
             content = content
         )
     }
