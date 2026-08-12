@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Copy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Forum
@@ -59,6 +60,7 @@ import com.opendroid.ai.data.models.effectiveGrantedActions
 import com.opendroid.ai.data.models.resolvedAutoMode
 import com.opendroid.ai.data.repository.ChatSession
 import com.opendroid.ai.ui.components.ContactPickerCard
+import com.opendroid.ai.ui.components.MarkdownText
 import com.opendroid.ai.ui.theme.*
 import com.opendroid.ai.ui.viewmodel.ChatViewModel
 import kotlinx.coroutines.delay
@@ -799,11 +801,12 @@ fun ChatBubble(
                 )
             }
 
-            Text(
+            MarkdownText(
                 text = message.text,
-                fontSize = 14.sp,
                 color = textColor,
-                lineHeight = 21.sp
+                fontSize = 14.sp,
+                lineHeight = 21.sp,
+                codeColor = AccentCyan
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -826,6 +829,22 @@ fun ChatBubble(
                             .clickable { onEditRequested(message) }
                     )
                 }
+                // Copy any message (tap the copy icon)
+                val clipContext = context ?: LocalContext.current
+                Icon(
+                    imageVector = Icons.Default.Copy,
+                    contentDescription = "Copy message",
+                    tint = TextSecondary,
+                    modifier = Modifier
+                        .size(14.dp)
+                        .clickable {
+                            val cm = clipContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE)
+                                as? android.content.ClipboardManager
+                            cm?.setPrimaryClip(
+                                android.content.ClipData.newPlainText("message", message.text)
+                            )
+                        }
+                )
                 Text(
                     text = timeFormat.format(Date(message.timestamp)),
                     fontSize = 10.sp,
